@@ -24,7 +24,7 @@ const InMemoryCache = new LRUMap(CACHE_SIZE);
 
 //Should pull these from the actual contract or via an ENV file
 let contractConstants = {
-  BIOMEBASE_KEY: 6270,
+  BIOMEBASE_KEY: 6282,
   BIOME_THRESHOLD_1: 15,
   BIOME_THRESHOLD_2: 17,
   DISABLE_ZK_CHECKS: false,
@@ -39,9 +39,9 @@ let contractConstants = {
   PERLIN_THRESHOLD_2: 15,
   PERLIN_THRESHOLD_3: 19,
   PHOTOID_ACTIVATION_DELAY: 14400,
-  PLANETHASH_KEY: 6278,
+  PLANETHASH_KEY: 6280,
   PLANET_RARITY: 6279,
-  SPACETYPE_KEY: 6279,
+  SPACETYPE_KEY: 6281,
   TIME_FACTOR_HUNDREDTHS: 100,
 };
 
