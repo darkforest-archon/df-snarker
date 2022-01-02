@@ -22,28 +22,10 @@ import { modPBigInt } from "@darkforest_eth/hashing";
 const CACHE_SIZE: number = parseInt(process?.env?.CACHE_SIZE || "10000");
 const InMemoryCache = new LRUMap(CACHE_SIZE);
 
+import { constants } from "../src/util"
+
 //Should pull these from the actual contract or via an ENV file
-let contractConstants = {
-  BIOMEBASE_KEY: 6270,
-  BIOME_THRESHOLD_1: 15,
-  BIOME_THRESHOLD_2: 17,
-  DISABLE_ZK_CHECKS: false,
-  INIT_PERLIN_MAX: 14,
-  INIT_PERLIN_MIN: 13,
-  LOCATION_REVEAL_COOLDOWN: 86400,
-  MAX_NATURAL_PLANET_LEVEL: 256,
-  PERLIN_LENGTH_SCALE: 16384,
-  PERLIN_MIRROR_X: false,
-  PERLIN_MIRROR_Y: false,
-  PERLIN_THRESHOLD_1: 14,
-  PERLIN_THRESHOLD_2: 15,
-  PERLIN_THRESHOLD_3: 19,
-  PHOTOID_ACTIVATION_DELAY: 14400,
-  PLANETHASH_KEY: 6278,
-  PLANET_RARITY: 6279,
-  SPACETYPE_KEY: 6279,
-  TIME_FACTOR_HUNDREDTHS: 100,
-};
+
 
 export async function getMoveArgs(
   x1: number,
@@ -66,11 +48,11 @@ export async function getMoveArgs(
       y2: modPBigInt(y2).toString(),
       r: r.toString(),
       distMax: distMax.toString(),
-      PLANETHASH_KEY: contractConstants.PLANETHASH_KEY.toString(),
-      SPACETYPE_KEY: contractConstants.SPACETYPE_KEY.toString(),
-      SCALE: contractConstants.PERLIN_LENGTH_SCALE.toString(),
-      xMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
-      yMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
+      PLANETHASH_KEY: constants.PLANETHASH_KEY.toString(),
+      SPACETYPE_KEY: constants.SPACETYPE_KEY.toString(),
+      SCALE: constants.PERLIN_LENGTH_SCALE.toString(),
+      xMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
+      yMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
     };
 
     const {
@@ -103,11 +85,11 @@ export async function getFindArtifactArgs(
     const input: BiomebaseSnarkInput = {
       x: modPBigInt(x).toString(),
       y: modPBigInt(y).toString(),
-      PLANETHASH_KEY: contractConstants.PLANETHASH_KEY.toString(),
-      BIOMEBASE_KEY: contractConstants.BIOMEBASE_KEY.toString(),
-      SCALE: contractConstants.PERLIN_LENGTH_SCALE.toString(),
-      xMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
-      yMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
+      PLANETHASH_KEY: constants.PLANETHASH_KEY.toString(),
+      BIOMEBASE_KEY: constants.BIOMEBASE_KEY.toString(),
+      SCALE: constants.PERLIN_LENGTH_SCALE.toString(),
+      xMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
+      yMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
     };
 
     const {
@@ -135,11 +117,11 @@ export async function getRevealArgs(
     const input: RevealSnarkInput = {
       x: modPBigInt(x).toString(),
       y: modPBigInt(y).toString(),
-      PLANETHASH_KEY: contractConstants.PLANETHASH_KEY.toString(),
-      SPACETYPE_KEY: contractConstants.SPACETYPE_KEY.toString(),
-      SCALE: contractConstants.PERLIN_LENGTH_SCALE.toString(),
-      xMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
-      yMirror: contractConstants.PERLIN_MIRROR_X ? "1" : "0",
+      PLANETHASH_KEY: constants.PLANETHASH_KEY.toString(),
+      SPACETYPE_KEY: constants.SPACETYPE_KEY.toString(),
+      SCALE: constants.PERLIN_LENGTH_SCALE.toString(),
+      xMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
+      yMirror: constants.PERLIN_MIRROR_X ? "1" : "0",
     };
 
     const {
