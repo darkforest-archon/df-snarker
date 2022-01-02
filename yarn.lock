@@ -66,11 +66,6 @@
     "big-integer" "^1.6.48"
     "ethers" "^5.5.1"
 
-"@darkforest_eth/snarks@6.7.0-staging-dec-3.0":
-  "integrity" "sha512-E84XEbCjxWL0fo/ysOwXKDdWXho4nR+tPLork7mMxdHjT+41IVliQvZF6xaF8lmZSY158SsMAyeG5pnJaKK2hQ=="
-  "resolved" "https://registry.npmmirror.com/@darkforest_eth/snarks/download/@darkforest_eth/snarks-6.7.0-staging-dec-3.0.tgz"
-  "version" "6.7.0-staging-dec-3.0"
-
 "@darkforest_eth/types@6.7.0-staging-dec-3.0":
   "integrity" "sha512-vitL4sxdJcSn83E3GIsoPHgO6CHSLOp9xflqTnUA/X/Z+w+UmFqcmr4HnRS7vCij32JEPqblp23qTR9TmsoPvw=="
   "resolved" "https://registry.npmmirror.com/@darkforest_eth/types/download/@darkforest_eth/types-6.7.0-staging-dec-3.0.tgz"
@@ -80,12 +75,17 @@
     "ethers" "^5.5.1"
     "ts-toolbelt" "^9.6.0"
 
-"@dfdao/contracts@^1.0.4":
+"@dfdao/contracts@1.0.4":
   "integrity" "sha512-QR6hcFiEiDzlqRkSQXVEe2YV2BTLHOT/Gcc/6z6pXeF7oF9BI1oi8qGWNvYiKZLciwBoz3XmZTHQt2u5yVXsAQ=="
   "resolved" "https://registry.npmmirror.com/@dfdao/contracts/download/@dfdao/contracts-1.0.4.tgz"
   "version" "1.0.4"
   dependencies:
     "ethers" "^5.5.2"
+
+"@dfdao/snarks@1.0.0":
+  "integrity" "sha512-bqu9tvnaIQmojC4d0eXOnb9FF9h6YNCthWDgFB0HZsWCwShRx3twLv4++aYbmSoW9pleJXqRiLNoKWnPi9/ZiA=="
+  "resolved" "https://registry.npmmirror.com/@dfdao/snarks/download/@dfdao/snarks-1.0.0.tgz"
+  "version" "1.0.0"
 
 "@ethersproject/abi@^5.5.0", "@ethersproject/abi@5.5.0":
   "integrity" "sha1-+1KCDiLlC4VP8VzhZHzFCNZmBhM="

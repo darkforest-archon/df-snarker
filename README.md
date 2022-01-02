@@ -1,8 +1,8 @@
 # df-snarker
 
-Hi there! :wave: this is the [Dark Forest v6 Round 3](https://zkga.me) Remote Snarking Plug-in Server.
+Hi there! :wave: this is the [Dark Forest dfdao Round](https://game.dfdao.xyz/play) Remote Snarking Plug-in Server.
 
-This server should be used in conjunction with https://github.com/darkforest-eth/plugins/blob/master/content/productivity/remote-snarker/plugin.js
+This server should be used in conjunction with `plugin.js`
 
 
 ## Getting Started
@@ -28,7 +28,7 @@ start the snarker
 
 ## Adding to your Plugin
 
-When adding the server address to your remote snarking plugin be sure to add /move to the end of the url!
+The url are added by default.
 
 ## Modify the Server for different version
 
@@ -42,6 +42,4 @@ https://github.com/darkforest-archon/df-snarker/blob/f5524a540adb4854f79187a28e8
 
 2. The parameters in `src/main.ts`
 
-If you meet revert like `bad planethash mimc key`, the zk parameters need update.
-
-https://github.com/darkforest-archon/df-snarker/blob/e9e3c1fef0c871ee24c4996cd8bd5822af985cae/src/main.ts#L26
+The parameters are loaded from the contracts automatically.
