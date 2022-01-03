@@ -2,7 +2,7 @@
 
 Hi there! :wave: this is the [Dark Forest dfdao Round](https://game.dfdao.xyz/play) Remote Snarking Plug-in Server.
 
-This server should be used in conjunction with `plugin.js`
+This server should be used in conjunction with `plugin/plugin.js`
 
 
 ## Getting Started
@@ -28,18 +28,4 @@ start the snarker
 
 ## Adding to your Plugin
 
-The url are added by default.
-
-## Modify the Server for different version
-
-Due to the different parameters and contracts for different rounds in Dark Forest.
-
-1. Update the package version in `yarn.lock`
-
-The version of `constants` and `contracts` needs update.
-
-https://github.com/darkforest-archon/df-snarker/blob/f5524a540adb4854f79187a28e86a3b60c7ecb03/yarn.lock#L5
-
-2. The parameters in `src/main.ts`
-
-The parameters are loaded from the contracts automatically.
+The url are added by default, just run it!
