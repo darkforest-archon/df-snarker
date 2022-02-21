@@ -16,7 +16,7 @@ import {
   RevealSnarkInput,
   revealSnarkWasmPath,
   revealSnarkZkeyPath,
-} from "@dfdao/snarks";
+} from "@darkforest_eth/snarks";
 
 import { modPBigInt } from "@darkforest_eth/hashing";
 const CACHE_SIZE: number = parseInt(process?.env?.CACHE_SIZE || "10000");

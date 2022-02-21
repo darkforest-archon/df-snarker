@@ -4,21 +4,11 @@ import {
     createEthConnection, 
     EthConnection 
 } from '@darkforest_eth/network';
-import type {
-    DarkForestCore,
-    DarkForestGetters,
-    DarkForestTokens,
-    Whitelist,
-} from '@dfdao/contracts/typechain';
-import {
-    CORE_CONTRACT_ADDRESS,
-    GETTERS_CONTRACT_ADDRESS,
-    TOKENS_CONTRACT_ADDRESS,
-    WHITELIST_CONTRACT_ADDRESS,
-} from '@dfdao/contracts';
+import { address } from '@darkforest_eth/serde';
+import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import diamondContractAbiUrl from '@darkforest_eth/contracts/abis/DarkForest.json';
 import { BigNumber as EthersBN } from 'ethers';
-import type { providers, Wallet } from 'ethers';
-import coreContractAbiUrl from '@dfdao/contracts/abis/DarkForestCore.json';
+import type { Contract, providers, Wallet } from 'ethers';
 
 export interface Constants {
     DISABLE_ZK_CHECKS: boolean;
@@ -55,22 +45,23 @@ function getEthConnection(): Promise<EthConnection> {
 }
 
 /**
- * Loads the Core game contract, which is responsible for updating the state of the game.
- * @see https://github.com/darkforest-eth/eth/blob/master/contracts/DarkForestCore.sol
+ * Loads the game contract, which is responsible for updating the state of the game.
  */
- export async function loadCoreContract(
+ export async function loadDiamondContract<T extends Contract>(
     address: string,
     provider: providers.JsonRpcProvider,
     signer?: Wallet
-): Promise<DarkForestCore> {
-    return createContract<DarkForestCore>(address, coreContractAbiUrl, provider, signer);
+  ): Promise<T> {
+    return createContract<T>(address, diamondContractAbiUrl, provider, signer);
 }
+
+const contractAddress = address('0x5da117b8aB8b739346F5EdC166789E5aFb1a7145')
 
 async function getConstants(): Promise<Constants> {
     const ethConnection = await getEthConnection();
-    await ethConnection.loadContract(CORE_CONTRACT_ADDRESS, loadCoreContract);
+    await ethConnection.loadContract(contractAddress, loadDiamondContract);
     const contractCaller = new ContractCaller();
-    const coreContract = ethConnection.getContract<DarkForestCore>(CORE_CONTRACT_ADDRESS);
+    const contract = ethConnection.getContract<DarkForest>(contractAddress);
     const {
         DISABLE_ZK_CHECKS,
         PLANETHASH_KEY,
@@ -79,17 +70,12 @@ async function getConstants(): Promise<Constants> {
         PERLIN_LENGTH_SCALE,
         PERLIN_MIRROR_X,
         PERLIN_MIRROR_Y,
-    } = await contractCaller.makeCall(coreContract.snarkConstants);
+    } = await contractCaller.makeCall(contract.getSnarkConstants);
 
     const {
-        SHRINK,
-        SHRINK_START,
-        ROUND_END,
-        DISC_UPPER_BOUND,
-        DISC_LOWER_BOUND,
-        MIN_RADIUS,
-        DESTROY_THRESHOLD,
-        INITIAL_WORLD_RADIUS,
+        ADMIN_CAN_ADD_PLANETS,
+        WORLD_RADIUS_LOCKED,
+        WORLD_RADIUS_MIN,
         MAX_NATURAL_PLANET_LEVEL,
         TIME_FACTOR_HUNDREDTHS,
         PERLIN_THRESHOLD_1,
@@ -100,10 +86,27 @@ async function getConstants(): Promise<Constants> {
         SPAWN_RIM_AREA,
         BIOME_THRESHOLD_1,
         BIOME_THRESHOLD_2,
+        SILVER_SCORE_VALUE,
+        PLANET_LEVEL_THRESHOLDS,
         PLANET_RARITY,
+        PLANET_TRANSFER_ENABLED,
         PHOTOID_ACTIVATION_DELAY,
-        LOCATION_REVEAL_COOLDOWN
-    } = await contractCaller.makeCall(coreContract.gameConstants);
+        LOCATION_REVEAL_COOLDOWN,
+        SPACE_JUNK_ENABLED,
+        SPACE_JUNK_LIMIT,
+        PLANET_LEVEL_JUNK,
+        ABANDON_SPEED_CHANGE_PERCENT,
+        ABANDON_RANGE_CHANGE_PERCENT,
+        // Capture Zones
+        GAME_START_BLOCK,
+        CAPTURE_ZONES_ENABLED,
+        CAPTURE_ZONE_COUNT,
+        CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL,
+        CAPTURE_ZONE_RADIUS,
+        CAPTURE_ZONE_PLANET_LEVEL_SCORE,
+        CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
+        CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
+    } = await contractCaller.makeCall(contract.getGameConstants);
 
     constants = {
         BIOMEBASE_KEY: BIOMEBASE_KEY.toNumber(),

@@ -1,8 +1,8 @@
-// Remote Snarker
+// Remote Snarker for v6 r5 round
 //
 // Similar to the remote explore plugin, the remote snarker plugin allows
 // players to run snark proof generation on another computer. We
-// usehttps://github.com/bind/df-snarker as a webserver that exposes a `/move`
+// use https://github.com/darkforest-archon/df-snarker/tree/v6.7.0 as a webserver that exposes a `/move`
 // endpoint and connect to it from in-game with this plugin. 
 //
 // When trying contact a remote server (not also running on your computer) from
@@ -202,85 +202,143 @@ async function snark(actionId, oldX, oldY, newX, newY) {
 }
 
 // Kinda like GameManager.move() but without localstorage and using our queue
-function move(from, to, forces, silver, artifactMoved) {
-  const oldLocation = df.entityStore.getLocationOfPlanet(from);
-  const newLocation = df.entityStore.getLocationOfPlanet(to);
-  const fromPlanet = df.entityStore.getPlanetWithId(from);
-  if (!oldLocation) {
-    console.error("tried to move from planet that does not exist");
-    return;
-  }
-  if (!newLocation) {
-    console.error("tried to move from planet that does not exist");
-    return;
-  }
+function move(from, to, forces, silver, artifactMoved, abandoning, bypassChecks) {
+    localStorage.setItem(`${df.getAccount()?.toLowerCase()}-fromPlanet`, from);
+    localStorage.setItem(`${df.getAccount()?.toLowerCase()}-toPlanet`, to);
 
-  if (fromPlanet.energy < forces) {
-    return;
-  }
-  const oldX = oldLocation.coords.x;
-  const oldY = oldLocation.coords.y;
-  const newX = newLocation.coords.x;
-  const newY = newLocation.coords.y;
+    try {
+      if (!bypassChecks && df.checkGameHasEnded()) {
+        throw new Error('game has ended');
+      }
 
-  const shipsMoved = forces;
-  const silverMoved = silver;
+      const arrivalsToOriginPlanet = df.entityStore.getArrivalIdsForLocation(from);
+      const hasIncomingVoyage = arrivalsToOriginPlanet && arrivalsToOriginPlanet.length > 0;
+      if (abandoning && hasIncomingVoyage) {
+        throw new Error('cannot abandon a planet that has incoming voyages');
+      }
 
-  // ignore the out bounds
-  // if (newX ** 2 + newY ** 2 >= df.worldRadius ** 2) {
-  //   throw new Error("attempted to move out of bounds");
-  // }
+      const oldLocation = df.entityStore.getLocationOfPlanet(from);
+      const newLocation = df.entityStore.getLocationOfPlanet(to);
+      if (!oldLocation) {
+        throw new Error('tried to move from planet that does not exist');
+      }
+      if (!newLocation) {
+        throw new Error('tried to move from planet that does not exist');
+      }
 
-  const oldPlanet = df.entityStore.getPlanetWithLocation(oldLocation);
+      const oldX = oldLocation.coords.x;
+      const oldY = oldLocation.coords.y;
+      const newX = newLocation.coords.x;
+      const newY = newLocation.coords.y;
+      const xDiff = newX - oldX;
+      const yDiff = newY - oldY;
 
-  if (!df.account || !oldPlanet || oldPlanet.owner !== df.account) {
-    throw new Error("attempted to move from a planet not owned by player");
-  }
-  const actionId = getRandomActionId();
+      const distMax = Math.ceil(Math.sqrt(xDiff ** 2 + yDiff ** 2));
 
-  const txIntent = {
-    actionId,
-    methodName: "move",
-    from: oldLocation.hash,
-    to: newLocation.hash,
-    forces: shipsMoved,
-    silver: silverMoved,
-  };
+      // Contract will automatically send full forces/silver on abandon
+      const shipsMoved = !abandoning ? forces : 0;
+      const silverMoved = !abandoning ? silver : 0;
 
-  if (artifactMoved) {
-    const artifact = df.entityStore.getArtifactById(artifactMoved);
-    if (!artifact) {
-      throw new Error("couldn't find this artifact");
+      if (newX ** 2 + newY ** 2 >= this.worldRadius ** 2) {
+        throw new Error('attempted to move out of bounds');
+      }
+
+      const oldPlanet = this.entityStore.getPlanetWithLocation(oldLocation);
+
+      if (
+        ((!bypassChecks && !this.account) || !oldPlanet || oldPlanet.owner !== this.account) &&
+        !isSpaceShip(this.getArtifactWithId(artifactMoved)?.artifactType)
+      ) {
+        throw new Error('attempted to move from a planet not owned by player');
+      }
+
+      const getArgs = async () => {
+        const snarkArgs = await this.snarkHelper.getMoveArgs(
+          oldX,
+          oldY,
+          newX,
+          newY,
+          this.worldRadius,
+          distMax
+        );
+
+        const args = [
+          snarkArgs[ZKArgIdx.PROOF_A],
+          snarkArgs[ZKArgIdx.PROOF_B],
+          snarkArgs[ZKArgIdx.PROOF_C],
+          [
+            ...snarkArgs[ZKArgIdx.DATA],
+            (shipsMoved * CONTRACT_PRECISION).toString(),
+            (silverMoved * CONTRACT_PRECISION).toString(),
+            '0',
+            abandoning ? '1' : '0',
+          ],
+        ];
+
+        this.terminal.current?.println('MOVE: calculated SNARK with args:', TerminalTextStyle.Sub);
+        this.terminal.current?.println(
+          JSON.stringify(hexifyBigIntNestedArray(args)),
+          TerminalTextStyle.Sub
+        );
+        this.terminal.current?.newline();
+
+        if (artifactMoved) {
+          args[ZKArgIdx.DATA][MoveArgIdxs.ARTIFACT_SENT] = artifactIdToDecStr(artifactMoved);
+        }
+
+        return args;
+      };
+
+      const txIntent = {
+        methodName: ContractMethodName.MOVE,
+        contract: this.contractsAPI.contract,
+        args: getArgs(),
+        from: oldLocation.hash,
+        to: newLocation.hash,
+        forces: shipsMoved,
+        silver: silverMoved,
+        artifact: artifactMoved,
+        abandoning,
+      };
+
+      if (artifactMoved) {
+        const artifact = this.entityStore.getArtifactById(artifactMoved);
+
+        if (!bypassChecks) {
+          if (!artifact) {
+            throw new Error("couldn't find this artifact");
+          }
+          if (isActivated(artifact)) {
+            throw new Error("can't move an activated artifact");
+          }
+          if (!oldPlanet?.heldArtifactIds?.includes(artifactMoved)) {
+            throw new Error("that artifact isn't on this planet!");
+          }
+        }
+      }
+
+      const cacheKey = `${oldX}-${oldY}-${newX}-${newY}-${df.worldRadius}-${distMax}`;
+      const cachedResult = df.snarkHelper.moveSnarkCache.get(cacheKey);
+      if (cachedResult) {
+        return df.contractsAPI.move(
+          actionId,
+          cachedResult,
+          shipsMoved,
+          silverMoved,
+          artifactMoved
+        );
+      } else {
+        moveSnarkQueue.add(() => snark(actionId, oldX, oldY, newX, newY));
+      }
+
+      // Always await the submitTransaction so we can catch rejections
+      // const tx = await this.contractsAPI.submitTransaction(txIntent);
+
+      // return tx;
+    } catch (e) {
+      this.getNotificationsManager().txInitError(ContractMethodName.MOVE, e.message);
+      throw e;
     }
-    if (isActivated(artifact)) {
-      throw new Error("can't move an activated artifact");
-    }
-    if (!oldPlanet.heldArtifactIds.includes(artifactMoved)) {
-      throw new Error("that artifact isn't on this planet!");
-    }
-    txIntent.artifact = artifactMoved;
-  }
-
-  df.handleTxIntent(txIntent);
-
-  const xDiff = newX - oldX;
-  const yDiff = newY - oldY;
-
-  const distMax = Math.ceil(Math.sqrt(xDiff ** 2 + yDiff ** 2));
-
-  const cacheKey = `${oldX}-${oldY}-${newX}-${newY}-${df.worldRadius}-${distMax}`;
-  const cachedResult = df.snarkHelper.moveSnarkCache.get(cacheKey);
-  if (cachedResult) {
-    return df.contractsAPI.move(
-      actionId,
-      cachedResult,
-      shipsMoved,
-      silverMoved,
-      artifactMoved
-    );
-  } else {
-    moveSnarkQueue.add(() => snark(actionId, oldX, oldY, newX, newY));
-  }
 }
 
 function updateConcurrency() {
